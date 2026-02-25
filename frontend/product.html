@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Supply Chain Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: #1e3a56; color: white; }
+        .logo { display: flex; align-items: center; }
+        .logo img { height: 40px; margin-right: 10px; }
+        .logo h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .navbar ul { list-style: none; display: flex; gap: 20px; }
+        .navbar ul li { display: inline; }
+        .navbar ul li a { color: white; text-decoration: none; font-size: 16px; }
+        .hero { 
+            position: relative; 
+            text-align: center; 
+            padding: 50px; 
+            background: url('https://source.unsplash.com/1600x600/?food,supplychain') center/cover no-repeat; 
+            color: white; 
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        .hero h2 { font-size: 40px; margin-bottom: 10px; font-weight: 600; color: #fff; }
+        .hero p { font-size: 20px; max-width: 800px; margin: auto; color: #fff; }
+        .container { max-width: 1100px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+        .tab-buttons { display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
+        .tab-buttons button { padding: 15px 20px; border: none; cursor: pointer; background: #3498db; color: white; font-size: 16px; border-radius: 5px; flex: 1; margin: 5px; }
+        .tab-buttons button:hover { background: #2980b9; }
+        .tab { display: none; padding: 20px; text-align: center; }
+        .active-tab { display: block; }
+        .input-box { width: 80%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin: 10px 0; }
+        .submit-btn { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .submit-btn:hover { background: #218838; }
+        .footer { text-align: center; padding: 20px; background: #1e3a56; color: white; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <i class="fas fa-leaf" style="font-size: 40px; margin-right: 10px; color: #4CAF50;"></i>
+            <h1>FoodChain Tracker</h1>
+        </div>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </div>
+    <div class="hero">
+        <div class="hero-content">
+            <h2>Track Your Food's Journey with Blockchain</h2>
+            <p>Ensuring Transparency & Trust in the Food Supply Chain - From Farm to Table</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="tab-buttons">
+            <button onclick="showTab('farmer')">Farmer</button>
+            <button onclick="showTab('transportation')">Transportation</button>
+            <button onclick="showTab('production')">Production</button>
+            <button onclick="showTab('storage')">Storage</button>
+            <button onclick="showTab('wholesaler')">Wholesaler</button>
+            <button onclick="showTab('retailer')">Retailer</button>
+        </div>
+        <div id="farmer" class="tab active-tab">
+            <h3>Farmer Information</h3>
+            <input type="text" id="name" class="input-box" placeholder="Product Name" />
+            <input type="text" id="origin" class="input-box" placeholder="Origin" />
+            <input type="text" id="category" class="input-box" placeholder="Category" />
+            <button class="submit-btn" onclick="addProduct()">Submit</button>
+        </div>
+        <div id="transportation" class="tab">
+            <h3>Transportation Details</h3>
+            <input type="text" id="transport-productId" class="input-box" placeholder="Product ID" />
+            <input type="text" id="transport-id" class="input-box" placeholder="Transport ID" />
+            <input type="text" id="vehicle-type" class="input-box" placeholder="Vehicle Type" />
+            <input type="text" id="route-details" class="input-box" placeholder="Route Details" />
+            <input type="text" id="transport-location" class="input-box" placeholder="Current Location" />
+            <button class="submit-btn" onclick="addTransportEvent()">Submit</button>
+        </div>
+        <div id="production" class="tab">
+            <h3>Production Details</h3>
+            <input type="text" id="production-productId" class="input-box" placeholder="Product ID" />
+            <input type="text" id="processing-plant" class="input-box" placeholder="Processing Plant" />
+            <input type="text" id="processing-date" class="input-box" placeholder="Processing Date" />
+            <input type="text" id="production-location" class="input-box" placeholder="Production Location" />
+            <button class="submit-btn" onclick="addProductionEvent()">Submit</button>
+        </div>
+        <div id="storage" class="tab">
+            <h3>Storage Information</h3>
+            <input type="text" id="storage-productId" class="input-box" placeholder="Product ID" />
+            <input type="text" id="storage-facility" class="input-box" placeholder="Storage Facility" />
+            <input type="text" id="storage-conditions" class="input-box" placeholder="Storage Conditions" />
+            <input type="text" id="storage-location" class="input-box" placeholder="Storage Location" />
+            <button class="submit-btn" onclick="addStorageEvent()">Submit</button>
+        </div>
+        <div id="wholesaler" class="tab">
+            <h3>Wholesaler Details</h3>
+            <input type="text" id="wholesaler-productId" class="input-box" placeholder="Product ID" />
+            <input type="text" id="wholesaler-name" class="input-box" placeholder="Wholesaler Name" />
+            <input type="text" id="distribution-center" class="input-box" placeholder="Distribution Center" />
+            <input type="text" id="wholesaler-location" class="input-box" placeholder="Wholesaler Location" />
+            <button class="submit-btn" onclick="addWholesalerEvent()">Submit</button>
+        </div>
+        <div id="retailer" class="tab">
+            <h3>Retailer Information</h3>
+            <input type="text" id="retailer-productId" class="input-box" placeholder="Product ID" />
+            <input type="text" id="retail-store" class="input-box" placeholder="Retail Store Name" />
+            <input type="text" id="retail-location" class="input-box" placeholder="Retail Location" />
+            <button class="submit-btn" onclick="addRetailerEvent()">Submit</button>
+        </div>
+        <div>
+            <h3>Product Information</h3>
+            <div id="productDetails">
+                <!-- Product details will be displayed here -->
+                 <input type="text" id="productId" placeholder="Enter Product ID" />
+                 <button onclick="getProductDetails()">Get Product Details</button>
+
+                <div id="productInfo"></div> <!-- Display product info here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active-tab'));
+            document.getElementById(tabId).classList.add('active-tab');
+        }
+
+        async function addProduct() {
+            const name = document.getElementById("name").value;
+            const origin = document.getElementById("origin").value;
+            const category = document.getElementById("category").value;
+
+            const response = await fetch("http://localhost:5000/addProduct", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, origin, category })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+
+            if (data.success) {
+                // Display product ID and QR Code
+                document.getElementById("productInfo").innerHTML = `
+                    <p><strong>Product ID:</strong> ${data.productId}</p>
+                    <p><strong>QR Code:</strong></p>
+                    <img src="${data.qrCodeImage}" alt="QR Code" />
+                `;
+            }
+        }
+
+        // Function to generate QR code
+        function generateQRCode(data) {
+            const qrCodeContainer = document.createElement('div');
+            qrCodeContainer.style.marginTop = '20px';
+            const qr = new QRCode(qrCodeContainer, {
+                text: data,
+                width: 128,
+                height: 128,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            document.body.appendChild(qrCodeContainer);
+        }
+
+        async function getProductDetails() {
+            const productId = document.getElementById("productId").value;
+            
+            if (!productId) {
+                alert("Please enter a Product ID");
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/getProduct/${productId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const product = data.product;
+                    const qrCodeImage = data.qrCodeImage;
+
+                    document.getElementById("productInfo").innerHTML = `
+                        <div style="border: 1px solid #ddd; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                            <h4>Product Details</h4>
+                            <p><strong>Product ID:</strong> ${product.productId}</p>
+                            <p><strong>Name:</strong> ${product.name}</p>
+                            <p><strong>Origin:</strong> ${product.origin}</p>
+                            <p><strong>Category:</strong> ${product.category}</p>
+                            <p><strong>Status:</strong> ${product.status}</p>
+                            <p><strong>Owner Address:</strong> ${product.owner}</p>
+                            <div style="text-align: center; margin-top: 15px;">
+                                <p><strong>QR Code:</strong></p>
+                                <img src="${qrCodeImage}" alt="QR Code" style="border: 1px solid #ddd; padding: 10px;" />
+                            </div>
+                            <button onclick="getSupplyChainHistory(${product.productId})" class="submit-btn" style="margin-top: 15px;">View Supply Chain History</button>
+                        </div>
+                    `;
+                } else {
+                    alert("Error: " + data.error);
+                    document.getElementById("productInfo").innerHTML = "";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to fetch product details. Please check if the server is running.");
+            }
+        }
+
+        async function getSupplyChainHistory(productId) {
+            try {
+                const response = await fetch(`http://localhost:5000/getHistory/${productId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    let historyHtml = '<div style="margin-top: 20px;"><h4>Supply Chain History</h4>';
+                    
+                    if (data.history.length === 0) {
+                        historyHtml += '<p>No history available for this product.</p>';
+                    } else {
+                        historyHtml += '<div style="max-height: 300px; overflow-y: auto;">';
+                        data.history.forEach(event => {
+                            historyHtml += `
+                                <div style="border-left: 3px solid #3498db; padding: 10px; margin: 10px 0; background: #f8f9fa;">
+                                    <strong>${event.event_type}</strong> - ${event.timestamp}<br>
+                                    <em>${event.description}</em><br>
+                                    ${event.location ? `<small>Location: ${event.location}</small>` : ''}
+                                </div>
+                            `;
+                        });
+                        historyHtml += '</div>';
+                    }
+                    historyHtml += '</div>';
+                    
+                    document.getElementById("productInfo").innerHTML += historyHtml;
+                } else {
+                    alert("Error fetching history: " + data.error);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to fetch supply chain history.");
+            }
+        }
+
+        // Supply Chain Event Functions
+        async function addTransportEvent() {
+            const productId = document.getElementById("transport-productId").value;
+            const transportId = document.getElementById("transport-id").value;
+            const vehicleType = document.getElementById("vehicle-type").value;
+            const routeDetails = document.getElementById("route-details").value;
+            const location = document.getElementById("transport-location").value;
+
+            if (!productId || !transportId) {
+                alert("Product ID and Transport ID are required!");
+                return;
+            }
+
+            const description = `Transport ${transportId} - ${vehicleType} - ${routeDetails}`;
+            await addSupplyChainEvent(productId, "Transportation", description, location);
+        }
+
+        async function addProductionEvent() {
+            const productId = document.getElementById("production-productId").value;
+            const plant = document.getElementById("processing-plant").value;
+            const date = document.getElementById("processing-date").value;
+            const location = document.getElementById("production-location").value;
+
+            if (!productId || !plant) {
+                alert("Product ID and Processing Plant are required!");
+                return;
+            }
+
+            const description = `Processed at ${plant} on ${date}`;
+            await addSupplyChainEvent(productId, "Production", description, location);
+        }
+
+        async function addStorageEvent() {
+            const productId = document.getElementById("storage-productId").value;
+            const facility = document.getElementById("storage-facility").value;
+            const conditions = document.getElementById("storage-conditions").value;
+            const location = document.getElementById("storage-location").value;
+
+            if (!productId || !facility) {
+                alert("Product ID and Storage Facility are required!");
+                return;
+            }
+
+            const description = `Stored at ${facility} - Conditions: ${conditions}`;
+            await addSupplyChainEvent(productId, "Storage", description, location);
+        }
+
+        async function addWholesalerEvent() {
+            const productId = document.getElementById("wholesaler-productId").value;
+            const name = document.getElementById("wholesaler-name").value;
+            const center = document.getElementById("distribution-center").value;
+            const location = document.getElementById("wholesaler-location").value;
+
+            if (!productId || !name) {
+                alert("Product ID and Wholesaler Name are required!");
+                return;
+            }
+
+            const description = `Distributed by ${name} at ${center}`;
+            await addSupplyChainEvent(productId, "Wholesale", description, location);
+        }
+
+        async function addRetailerEvent() {
+            const productId = document.getElementById("retailer-productId").value;
+            const store = document.getElementById("retail-store").value;
+            const location = document.getElementById("retail-location").value;
+
+            if (!productId || !store) {
+                alert("Product ID and Retail Store are required!");
+                return;
+            }
+
+            const description = `Available at ${store}`;
+            await addSupplyChainEvent(productId, "Retail", description, location);
+        }
+
+        async function addSupplyChainEvent(productId, eventType, description, location) {
+            try {
+                const response = await fetch("http://localhost:5000/addEvent", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ productId, eventType, description, location })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert("Event added successfully!");
+                    // Clear form fields
+                    document.querySelectorAll('.active-tab input').forEach(input => input.value = '');
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to add event. Please check if the server is running.");
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+</body>
+</html>

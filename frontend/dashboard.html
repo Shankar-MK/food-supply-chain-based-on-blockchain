@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Supply Chain Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .blockchain-flow {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .flow-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .supply-chain-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .flow-step.active {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .flow-step.completed {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .recent-transactions {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .transactions-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .transaction-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        .transaction-hash {
+            font-family: monospace;
+            color: #3498db;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .transaction-details {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .supply-chain-flow {
+                flex-direction: column;
+            }
+            
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-cubes"></i>
+                Blockchain Supply Chain Dashboard
+            </h1>
+            <p>Real-time monitoring and visualization of food supply chain on blockchain</p>
+            <div class="network-status">
+                <div class="status-indicator"></div>
+                <span>Connected to Local Hardhat Network</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-value" id="totalProducts">0</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stat-value" id="totalTransactions">0</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="stat-value" id="activeShipments">0</div>
+                <div class="stat-label">Active Shipments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stat-value" id="blockHeight">0</div>
+                <div class="stat-label">Block Height</div>
+            </div>
+        </div>
+
+        <div class="blockchain-flow">
+            <h2 class="flow-title">Supply Chain Flow</h2>
+            <div class="supply-chain-flow">
+                <div class="flow-step completed">
+                    <i class="fas fa-seedling"></i>
+                    <div>Farm</div>
+                </div>
+                <div class="flow-step active">
+                    <i class="fas fa-truck"></i>
+                    <div>Transport</div>
+                </div>
+                <div class="flow-step">
+                    <i class="fas fa-industry"></i>
+                    <div>Processing</div>
+                </div>
+                <div class="flow-step">
+                    <i class="fas fa-warehouse"></i>
+                    <div>Storage</div>
+                </div>
+                <div class="flow-step">
+                    <i class="fas fa-store"></i>
+                    <div>Retail</div>
+                </div>
+                <div class="flow-step">
+                    <i class="fas fa-user"></i>
+                    <div>Consumer</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Products by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Transaction Timeline</h3>
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+
+        <div class="recent-transactions">
+            <h2 class="transactions-title">Recent Blockchain Transactions</h2>
+            <button class="refresh-btn" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+            <div id="transactionsList">
+                <!-- Transactions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Blockchain connection
+        let provider;
+        let contract;
+        let signer;
+
+        // Contract configuration
+        const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+        const CONTRACT_ABI = [
+            "event ProductAdded(uint256,string,string,string,address)",
+            "event ProductUpdated(uint256,string,address)",
+            "function addProduct(string,string,string)",
+            "function getProduct(uint256) view returns (string,string,string,string,address)",
+            "function productCount() view returns (uint256)",
+            "function products(uint256) view returns (string,string,string,string,address)",
+            "function updateProduct(uint256,string)"
+        ];
+
+        // Initialize blockchain connection
+        async function initBlockchain() {
+            try {
+                provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                console.log("Blockchain connection established");
+                await loadDashboardData();
+            } catch (error) {
+                console.error("Failed to connect to blockchain:", error);
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Get total products
+                const productCount = await contract.productCount();
+                document.getElementById('totalProducts').textContent = productCount.toString();
+
+                // Get block height
+                const blockNumber = await provider.getBlockNumber();
+                document.getElementById('blockHeight').textContent = blockNumber.toString();
+
+                // Load recent transactions
+                await loadRecentTransactions();
+
+                // Update charts
+                updateCharts();
+
+                // Simulate other stats
+                document.getElementById('totalTransactions').textContent = (parseInt(productCount) * 2).toString();
+                document.getElementById('activeShipments').textContent = Math.max(0, parseInt(productCount) - 1).toString();
+
+            } catch (error) {
+                console.error("Error loading dashboard data:", error);
+            }
+        }
+
+        // Load recent transactions
+        async function loadRecentTransactions() {
+            try {
+                const response = await fetch('http://localhost:5000/api/supply-chain/1');
+                const data = await response.json();
+                
+                const transactionsList = document.getElementById('transactionsList');
+                transactionsList.innerHTML = '';
+
+                if (data.success && data.history.length > 0) {
+                    data.history.forEach(event => {
+                        const transactionItem = document.createElement('div');
+                        transactionItem.className = 'transaction-item';
+                        
+                        const hash = generateMockHash();
+                        transactionItem.innerHTML = `
+                            <div class="transaction-hash">Tx: ${hash}</div>
+                            <div class="transaction-details">
+                                <strong>${event.event_type}</strong> - ${event.description}<br>
+                                Location: ${event.location} | Time: ${new Date(event.timestamp).toLocaleString()}
+                            </div>
+                        `;
+                        transactionsList.appendChild(transactionItem);
+                    });
+                } else {
+                    transactionsList.innerHTML = '<p>No transactions found</p>';
+                }
+            } catch (error) {
+                console.error("Error loading transactions:", error);
+                document.getElementById('transactionsList').innerHTML = '<p>Error loading transactions</p>';
+            }
+        }
+
+        // Generate mock transaction hash
+        function generateMockHash() {
+            return '0x' + Math.random().toString(16).substr(2, 64);
+        }
+
+        // Update charts
+        function updateCharts() {
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fresh Fruit', 'Vegetables', 'Dairy', 'Meat', 'Grains'],
+                    datasets: [{
+                        data: [30, 25, 20, 15, 10],
+                        backgroundColor: [
+                            '#3498db',
+                            '#27ae60',
+                            '#f39c12',
+                            '#e74c3c',
+                            '#9b59b6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Timeline Chart
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = generateTimelineData();
+            
+            new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineData.labels,
+                    datasets: [{
+                        label: 'Transactions',
+                        data: timelineData.data,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generate timeline data
+        function generateTimelineData() {
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString());
+                data.push(Math.floor(Math.random() * 10) + 1);
+            }
+            
+            return { labels, data };
+        }
+
+        // Refresh data
+        async function refreshData() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            
+            try {
+                await loadDashboardData();
+                refreshBtn.innerHTML = '<i class="fas fa-check"></i> Refreshed!';
+                setTimeout(() => {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+                }, 2000);
+            } catch (error) {
+                refreshBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                setTimeout(() => {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+                }, 2000);
+            }
+        }
+
+        // Initialize dashboard when page loads
+        window.addEventListener('load', initBlockchain);
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboardData, 30000);
+    </script>
+</body>
+</html>
+

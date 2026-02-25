@@ -1,0 +1,12 @@
+{
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "abi": [
+    "event ProductAdded(uint256,string,string,string,address)",
+    "event ProductUpdated(uint256,string,address)",
+    "function addProduct(string,string,string)",
+    "function getProduct(uint256) view returns (string,string,string,string,address)",
+    "function productCount() view returns (uint256)",
+    "function products(uint256) view returns (string,string,string,string,address)",
+    "function updateProduct(uint256,string)"
+  ]
+}
